@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>PiramideTruncada
+    </title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+      #text {
+        position: absolute;
+        padding: 10px;
+        width: 100%;
+        text-align: center;
+        color: #fc8b22;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="text">Piramide<br/>
+      En forma truncada<br/>
+      <br/>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r94/three.min.js"></script>
+    <script type="module">
+        import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
+
+    //Funcion donde se crea la geometria de una figura en base a un arreglo de vertices
+    function Geometria (v) {
+    const geom = new THREE.Geometry();
+      var largoVertice = v.length;
+     for (var i = 0; i < largoVertice; i++){
+       [x,y,z]=[v[i][0],v[i][1],v[i][2]]
+        var vector = new THREE.Vector3(x, y, z);
+        geom.vertices.push(vector); 
+      }
+      return geom;
+    }
+
+    //Escena
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 4000); //Uso de la camara de perspectiva
+    //THREE.PerspectiveCamera(Campo de vision, Aspecto basado en: Ancho / Altura, plano minimo, plano maximo))
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(0x252342, 1.0);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    //Creacion de flechas de los ejes y tamaño del plano XZ
+    var size = 400;
+    var arrowSize = 140;
+    var divisions = 20;
+    var origin = new THREE.Vector3( 0, 0, 0 );
+    var x = new THREE.Vector3( 1, 0, 0 );
+    var y = new THREE.Vector3( 0, 1, 0 );
+    var z = new THREE.Vector3( 0, 0, 1 );
+    var color2 = new THREE.Color( 0x333333 );
+    var colorR = new THREE.Color( 0xAA0000 );
+    var colorG = new THREE.Color( 0x00AA00 );
+    var colorB = new THREE.Color( 0x0000AA );
+
+    //Crear escenario 
+    var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2);
+
+    //Flechas
+    var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+    var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );
+    var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+        
+    //Cámara
+    camera.position.x = 200;
+    camera.position.y = 100;
+    camera.position.z = 400;
+    camera.lookAt(scene.position);
+
+    //Uso de OrbitControls
+    var controls = new OrbitControls(camera, renderer.domElement);
+
+    //Variables de la geometria del poliedro
+    const b = 9; //Base 
+    const w = 10; //Anchura (width)
+    const h = 110; //Altura (height)
+    const numL = 6; //Numero de lados
+
+    //Creacion del poligono (2D)
+    function Poligono(n,l,y){
+            const v=[]; //Vector
+            const a = (2*Math.PI)/n; //Angulo 
+
+            for(let i=0; i<=n; i++){
+                let x = l*Math.cos(i*a);
+                let z = l*Math.sin(i*a);
+                v[i] = [x,y,z];
+            }
+            return v;
+        }
+
+    //Material
+    var material = new THREE.PointsMaterial({color:0xfc8b22});
+
+    //Creacion del poliedro de piramide truncada (3D) en base a la funcion poligono
+        function troncoPiramide(w,h,b,numL,material){ 
+
+        //Se crean dos figuras utilizando dos vectores
+        //v0 (Primer vector) con geometria "g0" y creacion de la figura "f0"
+         const v0 = Poligono(numL,w*b,0);
+         const g0 = Geometria(v0); 
+         const f0 = new THREE.Line(g0,material);
+        
+        //v0 (Primer vector) con geometria "g0" y creacion de la figura "f0"
+        const v1 = Poligono(numL,w,h);
+        const g1 = Geometria(v1);
+        const f1 = new THREE.Line(g1,material);
+        
+        //Creacion de los dos arreglos a la escena
+        scene.add(f0);
+        scene.add(f1);
+ 
+            const v=[]; //Arreglo de vertices conformado por los dos arreglos de arriba
+            for(let i=0; i<=numL; i++){
+                v[0] = v0[i];
+                v[1] = v1[i];
+
+                const geom = Geometria(v);
+                const tronco = new THREE.Line(geom,material);
+                scene.add(tronco);
+            }
+        }
+   
+    //En el documento HTML
+    document.body.appendChild(renderer.domElement);
+
+    // Agregar elementos al escenario
+    scene.add(gridHelperXZ);
+    scene.add(arrowX);	
+    scene.add(arrowY);	
+    scene.add(arrowZ);
+    //Creacion de la piramide truncada 
+    troncoPiramide(w,h,b,numL,material);
+    
+    function orbit() {
+        requestAnimationFrame(orbit);
+        renderer.render(scene, camera);
+        }
+        orbit();
+
+        </script>
+    </body>
+</html>
